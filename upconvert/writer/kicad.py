@@ -31,6 +31,7 @@
 # KiCAD library file (where components are stored) y coordinates
 # increase upwards as in OpenJSON and no transformation is needed.
 
+import math
 
 import time
 
@@ -63,7 +64,7 @@ class KiCAD(object):
             for inst in design.component_instances:
                 self.write_instance(f, inst)
             for net in design.nets:
-                self.write_net(f, net)
+                self.write_net(f, net, design)
             self.write_footer(f)
 
 
@@ -142,7 +143,7 @@ $EndDescr
         f.write('$EndComp\n')
 
 
-    def write_net(self, f, net):
+    def write_net(self, f, net, design):
         """ Write a Net as kiCAD Wires and Connections """
         segments = set() # ((x,y),(x,y))
 
@@ -153,6 +154,20 @@ $EndDescr
                     seg = [(point.x, point.y), (point2.x, point2.y)]
                     seg.sort() # canonical order
                     segments.add(tuple(seg))
+            for connectedCompInst in point.connected_components:
+                compInstID = connectedCompInst.instance_id
+                compInstPin = connectedCompInst.pin_number
+                inst = design.get_component_instance(compInstID)
+                comp = inst.library_component
+                ##print comp.symbols[0].bodies[0].pins[0].pin_number
+                pin = comp.component.get_Pin(compInstPin)
+                rot = inst.symbol_attributes[0].rotation
+                pinx = pin.p2.x * math.cos(float(math.pi * rot)) + pin.p2.y * math.sin(float(math.pi * rot))
+                piny = - pin.p2.x * math.sin(float(math.pi * rot)) + pin.p2.y * math.cos(float(math.pi * rot))
+                #piny=pin.p2.x*sin(math.pi*rot)+pin.p2.y*cos(math.pi*rot)
+                seg = [(point.x, point.y), (inst.symbol_attributes[0].x + pinx, inst.symbol_attributes[0].y + piny)]
+                seg.sort() # canonical order
+                segments.add(tuple(seg))
 
         for seg in sorted(segments):
             f.write('Wire Wire Line\n')

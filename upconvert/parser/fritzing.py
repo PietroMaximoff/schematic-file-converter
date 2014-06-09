@@ -137,6 +137,11 @@ class Fritzing(object):
         if view is None:
             return
 
+        view2 = inst.find('views/breadboardView')
+
+        if view2 is not None:
+            return
+
         index = inst.get('modelIndex')
         geom = view.find('geometry')
 

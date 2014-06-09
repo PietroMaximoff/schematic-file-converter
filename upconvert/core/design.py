@@ -87,6 +87,11 @@ class Design:
     def get_attribute(self, attr_name):
         return self.design_attributes.attributes.get(attr_name, '??')
 
+    def get_component_instance(self, InstID):
+        for inst in self.component_instances:
+            if inst.instance_id == InstID:
+                return inst
+
 
     def add_component_instance(self, component_instance):
         """ Add an instance """

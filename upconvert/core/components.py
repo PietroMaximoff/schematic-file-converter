@@ -123,6 +123,14 @@ class Component:
             }
 
 
+    def get_Pin(self, pinN):
+        for symbol in self.symbols:
+            for body in symbol.bodies:
+                for pin in body.pins:
+                    if pin.pin_number == pinN:
+                        return pin
+
+
 class Symbol:
     """ This is a graphical representation of a Component.
     A Component can have many Symbols, and each Symbol can have
@@ -229,7 +237,6 @@ class SBody:
             y_values = [0]
         return [Point(min(x_values), min(y_values)),
                 Point(max(x_values), max(y_values))]
-
 
     def add_pin(self, pin):
         """ Add a pin to a symbol """
