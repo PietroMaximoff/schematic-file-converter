@@ -137,10 +137,10 @@ class Fritzing(object):
         if view is None:
             return
 
-        view2 = inst.find('views/breadboardView')
+        #view2 = inst.find('views/breadboardView')
 
-        if view2 is not None:
-            return
+        #if view2 is not None:
+        #    return
 
         index = inst.get('modelIndex')
         geom = view.find('geometry')
@@ -182,6 +182,7 @@ class Fritzing(object):
 
         fzp_path = inst.get('path')
         if not fzp_path:
+            print "Path not found", idref
             return None
 
         if exists(fzp_path):
@@ -195,17 +196,26 @@ class Fritzing(object):
                 fzp_path = fzp_file
 
         if not fzp_file:
+            print "File not found", idref
             return None
 
         parser = ComponentParser(idref)
         parser.parse_fzp(fzp_file)
 
         if parser.image is not None:
+            print "Image Path found", idref
             svg_file = self.lookup_fzz_file(parser.image, 'svg.schematic')
 
             if svg_file is None:
+                print "Image not in fzz", idref
+                print fzp_path
                 fzp_dir = dirname(fzp_path)
-                parts_dir = dirname(fzp_dir)
+                print fzp_dir
+                pdb_dir = dirname(fzp_dir)
+                print pdb_dir
+                fritzingroot_dir = dirname(pdb_dir)
+                parts_dir = fritzingroot_dir + '/parts'
+                print parts_dir
                 svg_path = join(parts_dir, 'svg', basename(fzp_dir),
                                 parser.image)
 
@@ -378,7 +388,7 @@ class ComponentParser(object):
 
     # The svg files in fritzing libraries are specified in pixels that
     # are 72dpi. The schematics are in 90dpi.
-    svg_mult = 90.0 / 72.0
+    svg_mult = 90.0 / 26.0
 
     def __init__(self, idref):
         self.component = Component(idref)
@@ -463,7 +473,9 @@ class ComponentParser(object):
 
         tree = ElementTree(file=svg_file)
         viewbox = tree.getroot().get('viewBox')
-
+        
+        #self.svg_mult = self.svg_mult*3
+        
         if viewbox != None:
             self.width, self.height = [float(v) for v in viewbox.split()[-2:]]
             self.width *= self.svg_mult
