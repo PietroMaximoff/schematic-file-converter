@@ -201,7 +201,9 @@ $EndDescr
     def write_library_component(self, f, cpt):
         """ Write a single component to a kiCAD cache library """
         cpt_name, cpt = cpt
-        ref = cpt.attributes.get('_prefix', 'U').encode('utf-8')
+        ref = cpt.attributes.get('_prefix', 'U').encode('utf-8')      
+        ref=ref.replace(' ','')
+        #print ref
         name = cpt_name.replace(' ', '')
         name = name.encode('utf-8')
         f.write('#\n')
@@ -230,6 +232,7 @@ $EndDescr
                          add_line.next_index)
                 add_line.next_index += 1
                 lines[obj] = (order, self.get_line(obj), symbol, set(), set())
+                #print lines[obj]
             lines[obj][3].add(unit)
             lines[obj][4].add(convert)
 
@@ -270,6 +273,7 @@ $EndDescr
 
     def get_shape_line(self, shape):
         """ Return the line for a Shape in a kiCAD cache library """
+        #print shape.type
         if shape.type == 'arc':
             # convert pi radians to tenths of degrees
             start = round(shape.start_angle * 1800)
@@ -332,7 +336,7 @@ $EndDescr
         else:
             name = pin.label.text
 
-        return ('X %s %s %d %d %d %s 60 60 %%(unit)d %%(convert)d B\n' %
+        return ('X %s %s %d %d %d %s 30 30 %%(unit)d %%(convert)d B\n' %
                 (name, pin.pin_number, make_length(x), make_length(y),
                  make_length(abs(length)), direction))
 

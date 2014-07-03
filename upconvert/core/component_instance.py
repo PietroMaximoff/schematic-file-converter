@@ -58,7 +58,7 @@ class ComponentInstance:
     def add_symbol_attribute(self, symbol_attribute):
         """ Add attribute to a components symbol """
         self.symbol_attributes.append(symbol_attribute)
-
+		
 
     def add_footprint_attribute(self, footprint_attribute):
         """ Add attribute to a components footprint """

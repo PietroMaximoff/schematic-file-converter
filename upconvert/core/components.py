@@ -84,7 +84,6 @@ class Component:
         """ Add an attribute to a component """
         self.attributes[key] = value
 
-
     def add_symbol(self, symbol):
         """ Add a symbol to a component """
         self.symbols.append(symbol)
@@ -138,12 +137,12 @@ class Symbol:
 
     def __init__(self):
         self.bodies = list()
-
+       
 
     def add_body(self, body):
         """ Add a body to a symbol """
         self.bodies.append(body)
-
+	    
 
     def scale(self, factor):
         """ Scale the x & y coordinates in the symbol. """

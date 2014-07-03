@@ -182,7 +182,7 @@ class Fritzing(object):
 
         fzp_path = inst.get('path')
         if not fzp_path:
-            print "Path not found", idref
+           # print "Path not found", idref
             return None
 
         if exists(fzp_path):
@@ -196,37 +196,36 @@ class Fritzing(object):
                 fzp_path = fzp_file
 
         if not fzp_file:
-            print "File not found", idref
+          # print "File not found", idref
             return None
 
         parser = ComponentParser(idref)
         parser.parse_fzp(fzp_file)
 
         if parser.image is not None:
-            print "Image Path found", idref
+            #print "Image Path found", idref
             svg_file = self.lookup_fzz_file(parser.image, 'svg.schematic')
-
+			
             if svg_file is None:
-                print "Image not in fzz", idref
-                print fzp_path
+               # print "Image not in fzz", idref
+                #print fzp_path
                 fzp_dir = dirname(fzp_path)
-                print fzp_dir
+                #print fzp_dir
                 pdb_dir = dirname(fzp_dir)
-                print pdb_dir
+                #print pdb_dir
                 fritzingroot_dir = dirname(pdb_dir)
                 parts_dir = fritzingroot_dir + '/parts'
-                print parts_dir
-                svg_path = join(parts_dir, 'svg', basename(fzp_dir),
-                                parser.image)
-
+                #print parts_dir
+                svg_path = join(parts_dir, 'svg', basename(fzp_dir),parser.image)
+                #print basename(fzp_dir)			   
                 if exists(svg_path):
                     svg_file = svg_path
+                    #print svg_file
 
             if svg_file is not None:
                 parser.parse_svg(svg_file)
 
         self.components[idref] = parser
-
         return parser
 
 
@@ -284,7 +283,6 @@ class Fritzing(object):
             SymbolAttribute(make_x(x), make_y(y), rotation, False))
 
         self.component_instances[index] = compinst
-
 
     def build_nets(self):
         """ Build the nets from the connects, points, and instances """
@@ -423,10 +421,12 @@ class ComponentParser(object):
 
         layers = tree.find('views/schematicView/layers')
         if layers is None:
-            self.image = None
+			self.image = None
         else:
-            self.image = layers.get('image')
-
+			self.image = layers.get('image')
+			if self.image == 'schematic/dcpower.svg' :
+				self.image='schematic/dc_powersupply.svg'
+			#print self.image
 
     def connect_point(self, cid, inst, point):
         """ Given a connector id, instance id, and a NetPoint,
@@ -471,10 +471,9 @@ class ComponentParser(object):
     def parse_svg(self, svg_file):
         """ Parse the shapes and pins from an svg file """
 
-        tree = ElementTree(file=svg_file)
+        tree = ElementTree(file=svg_file)        
         viewbox = tree.getroot().get('viewBox')
-        
-        #self.svg_mult = self.svg_mult*3
+                #self.svg_mult = self.svg_mult*3
         
         if viewbox != None:
             self.width, self.height = [float(v) for v in viewbox.split()[-2:]]
@@ -482,9 +481,11 @@ class ComponentParser(object):
             self.height *= self.svg_mult
 
         _iter = tree.getroot().getiterator()
+        #print _iter
+       
         for element in _iter:
             for shape in self.parse_shapes(element):
-                self.body.add_shape(shape)
+                self.body.add_shape(shape)               
                 if element.get('id') in self.terminals:
                     pin = get_pin(shape)
                     if pin is not None:
@@ -497,6 +498,7 @@ class ComponentParser(object):
         """ Parse a list of shapes from an svg element """
 
         tag = element.tag.rsplit('}', -1)[-1]
+        #print element
 
         if tag == 'circle':
             return self.parse_circle(element)
@@ -518,10 +520,8 @@ class ComponentParser(object):
 
         x, y = (get_x(rect, mult=self.svg_mult),
                 get_y(rect, mult=self.svg_mult))
-        width, height = (get_length(rect, 'width', self.svg_mult),
-                         get_length(rect, 'height', self.svg_mult))
+        width, height = (get_length(rect, 'width', self.svg_mult),get_length(rect, 'height', self.svg_mult))         
         return [Rectangle(x, y, width, height)]
-
 
     def parse_line(self, rect):
         """ Parse a line element """
@@ -534,7 +534,7 @@ class ComponentParser(object):
 
     def parse_path(self, path):
         """ Parse a path element """
-
+		
         return PathParser(path).parse()
 
 
@@ -631,15 +631,18 @@ class PathParser(object):
         """ Parse the path element and return a list of shapes. """
 
         data = self.path.get('d', '').strip()
+        #print data
 
         while data:
             cmd = data[0].lower()
+            print cmd
             is_relative = data[0] == cmd
             handler = getattr(self, 'parse_' + cmd, None)
             if handler is None:
                 break
             else:
                 data = handler(data[1:], is_relative)
+                #print data
                 self.prev_cmd = cmd
 
         def is_empty_line(shape):
@@ -726,6 +729,10 @@ class PathParser(object):
 
         return data
 
+    def parse_a(self, data, is_relative):
+		print hello
+		return data
+
 
     def parse_h(self, data, is_relative):
         """ Parse an H or h (horizontal line) segment. """
@@ -782,6 +789,7 @@ class PathParser(object):
                             make_point(end, self.svg_mult)))
 
         return data
+     
 
 
     def parse_s(self, data, is_relative):
